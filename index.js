@@ -50,7 +50,19 @@ const questions = [
 ];
 
 // function to write README file
-function writeToFile(fileName, data) {
+function generateReadMe(responses){
+
+    fs.writeFile
+    (
+        "./output/README.md",
+        template.getReadMe(gitHubUserData,responses),
+        (err) => {
+            if(err)
+                console.log("An error occured while writing file");
+            else
+                console.log("File saved");
+        }
+    );
 }
 
 // function to initialize program
