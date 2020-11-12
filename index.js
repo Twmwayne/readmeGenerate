@@ -56,6 +56,10 @@ function writeToFile(fileName, data) {
 // function to initialize program
 function init() {
 
+    inquirer.prompt(questions).then(resp => {
+
+        generateReadMe(resp);
+    });
 }
 
 // function call to initialize program
