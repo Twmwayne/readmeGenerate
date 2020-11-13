@@ -1,82 +1,83 @@
 const inquirer = require("inquirer");
-const fs = require("fs");
-const template = require('./template.js');
+const fs = require('fs');
+const axios = require('axios');
 
-// array of questions for user
-const questions = [
+inquirer.prompt([
     {
-        name: "username",
-        message: "What is your GitHub username?",
-        validate: verifyGitHubAccount
+        type: "input",
+        name: "name",
+        message: "What is your name?"
     },
     {
-        type: "list",
-        name: "repoName",
-        message: "Select the project repo:",
-        filter:setRepoDefaults
+        type: "input",
+        name: "gitname",
+        message: "What is your GitHub user name?"
     },
     {
+        type: "input",
         name: "title",
-        message: "Enter a project title:",
+        message: "What is the title of your project?"
     },
     {
+        type: "input",
         name: "description",
-        message: "Enter a project description:",
+        message: "Please enter a brief description of the project:"
     },
     {
-        name: "installation",
-        message: "Enter installation instructions:"
-    },
-    {
+        type: "input",
         name: "usage",
-        message: "Enter usage directions:"
-    },
-    {
-        type: "list",
-        name: "license",
-        message: "Select license type:",
-        choices: ["copyleft","lpgl","MIT","permissive","proprietary","public"]
-    },
-    {
-        name: "contributors",
-        message: "Enter contibutors:"
-    },
-    {
-        name: "tests",
-        message: "Enter tests:"
-    },
-    {
-        name: "email",
-        message: "Enter contact email:",
-        validate: validateEmail
+        message: "Please explain the usage for your project:"
     }
+  ]).then(function(response) {
+    let {name,gitname,title,description,usage} = response;
+    let avatarUrl;
+    let email;
+    let queryUrl = `https://api.github.com/users/${gitname}`;
+    axios.get(queryUrl).then(
+        (response) => {
+            //console.log(response);
+            avatarUrl = response.data.avatar_url;
+            
+            if(email==null) {
+                email = ".";
+            } else {
+                email = ", or email me at " + response.data.email + ".";
+            };
 
-];
+            let filename = name.toLowerCase().split(' ').join('_') + ".md";
+           
+let data = `# ${title}
 
-// function to write README file
-function generateReadMe(responses){
+Author: ${name}
+## Description
+${description}
+## Table of Contents 
+* [Installation](#installation)
+* [Usage](#usage)
+* [License](#license)
+* [Tests](#tests)
+* [Questions](#questions)
+## Installation
+To install necessary dependencies, run the following command:
+npm install
+## Usage
+${usage}
+## License
+This project is licensed under the MIT license.
+## Tests
+To run tests, run the following command:
+npm test
+## Questions
+[![GitHub license](https://img.shields.io/badge/GitHubUser-${gitname}-orange)](${queryUrl})
+If you have any questions about the repo, open an issue or contact me directly [here](${queryUrl})${email}`;
 
-    fs.writeFile
-    (
-        "./output/README.md",
-        template.getReadMe(gitHubUserData,responses),
-        (err) => {
-            if(err)
-                console.log("An error occured while writing file");
-            else
-                console.log("File saved");
+    fs.writeFile(filename, data, function(error) {
+        if(error) {
+            return console.log(error);
+        } 
+        console.log("Your README file has been generated.");
+    })
         }
     );
-}
-
-// function to initialize program
-function init() {
-
-    inquirer.prompt(questions).then(resp => {
-
-        generateReadMe(resp);
-    });
-}
-
-// function call to initialize program
-init();
+    
+  });
